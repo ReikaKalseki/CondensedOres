@@ -99,26 +99,33 @@ public class OreEntry {
 		sb.append("Biomes: "+biomeRules+"\n");
 		sb.append("Dimensions: "+dimensionRules+"\n");
 		sb.append("Spawn Blocks: "+blockRules+"\n");
-		sb.append("ProximityRules: "+neighbors+"\n");
+		sb.append("Proximity Rules: "+neighbors+"\n");
 		return sb.toString();
 	}
 
 	public void generate(World world, int chunkX, int chunkZ, Random random) {
 		chunkX *= 16;
 		chunkZ *= 16;
-		if (dimensionRules.isValidDimension(world)) {
-			if (biomeRules.isValidBiome(world, chunkX, chunkZ)) {
-				if (frequency.generate(chunkX, chunkZ, random)) {
+		boolean flag = false;
+		if (frequency.generate(chunkX, chunkZ, random)) {
+			if (dimensionRules.isValidDimension(world)) {
+				if (biomeRules.isValidBiome(world, chunkX, chunkZ)) {
 					int n = frequency.getVeinCount(chunkX, chunkZ, random);
 					for (int i = 0; i < n; i++) {
 						int x = chunkX + random.nextInt(16);
 						int z = chunkZ + random.nextInt(16);
 						int y = height.getRandomizedY(random);
-						this.placeVein(world, x, y, z, random);
+						flag = this.placeVein(world, x, y, z, random);
 					}
 				}
 			}
 		}
+		//else {
+		//
+		//}
+		//if (flag) {
+		//	CondensedOres.logger.debug("Generated "+this+" @ "+chunkX+","+chunkZ);
+		//}
 	}
 
 	private boolean placeVein(World world, int x, int y, int z, Random random) {
@@ -127,7 +134,9 @@ public class OreEntry {
 			if (neighbors.isLocationValid(world, x, y, z)) {
 				vein.target = at.blockID;
 				vein.proximity = neighbors;
-				return vein.generate(world, random, x, y, z);
+				if (vein.generate(world, random, x, y, z)) {
+					return true;
+				}
 			}
 		}
 		return false;

@@ -47,7 +47,7 @@ public class ProximityRule {
 
 	@Override
 	public String toString() {
-		return blocks.isEmpty() ? "None" : strictProximity ? "[Strict]" : "[General]"+" Next to: "+blocks;
+		return blocks.isEmpty() ? "None" : (strictProximity ? "[Strict]" : "[General]")+" Next to: "+blocks;
 	}
 
 }

@@ -53,6 +53,7 @@ public class CondensedOreConfig {
 		base.data.put("type", "base");
 		base.data.put("sprinkleMix", "false");
 		base.data.put("veinSize", "10");
+		//base.data.put("generate", "true");
 		LuaBlock height = new LuaBlock("heightRule", base);
 		height.data.put("minHeight", "0");
 		height.data.put("maxHeight", "64");

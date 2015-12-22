@@ -17,6 +17,7 @@ public class ReloadOreConfigCommand extends DragonCommandBase {
 
 	@Override
 	public void processCommand(ICommandSender ics, String[] args) {
+		CondensedOres.config.reload();
 		CondensedOreConfig.instance.loadConfigs();
 		this.sendChatToSender(ics, "Ore config reloaded, "+CondensedOreConfig.instance.getOres().size()+" entries loaded.");
 	}
