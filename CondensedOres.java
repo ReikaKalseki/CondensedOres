@@ -9,7 +9,11 @@
  ******************************************************************************/
 package Reika.CondensedOres;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
 
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.DragonOptions;
@@ -17,6 +21,7 @@ import Reika.DragonAPI.Auxiliary.Trackers.CommandableUpdateChecker;
 import Reika.DragonAPI.Auxiliary.Trackers.RetroGenController;
 import Reika.DragonAPI.Base.DragonAPIMod;
 import Reika.DragonAPI.Base.DragonAPIMod.LoadProfiler.LoadPhase;
+import Reika.DragonAPI.IO.ReikaFileReader;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 import cpw.mods.fml.common.Mod;
@@ -54,8 +59,24 @@ public class CondensedOres extends DragonAPIMod {
 
 		//CondensedOreConfig.instance.loadConfigs(); //for initial testing
 
+		if (!this.isSource())
+			this.makeExampleFile(config.getConfigFolder());
+
 		this.basicSetup(evt);
 		this.finishTiming();
+	}
+
+	private void makeExampleFile(File folder) {
+		try {
+			File dest = new File(folder, "CondensedOres_example.lua");
+			InputStream in = ReikaFileReader.getFileInsideJar(this.getModFile(), "Reika/CondensedOres/example.lua");
+			File src = ReikaFileReader.createFileFromStream(in);
+			FileUtils.copyFile(src, dest);
+		}
+		catch (Exception e) {
+			logger.logError("Could not make example file.");
+			e.printStackTrace();
+		}
 	}
 
 	@Override
