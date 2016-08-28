@@ -17,16 +17,18 @@ import Reika.CondensedOres.CondensedOres;
 
 public class FrequencyRule {
 
+	private final String oreName;
 	private final double chunkGenChance;
 	private final double veinsPerChunk;
 
-	public FrequencyRule(double v, double c) {
+	public FrequencyRule(String n, double v, double c) {
+		oreName = n;
 		if (v < 1)
-			throw new IllegalArgumentException("Invalid vein frequency setting: # of Veins per generated chunk must be at least one!");
+			throw new IllegalArgumentException("Invalid vein frequency setting for '"+n+"': # of Veins per generated chunk must be at least one!");
 		if (c <= 0)
-			throw new IllegalArgumentException("Invalid vein frequency setting: chunk generation chance must be more than zero!");
+			throw new IllegalArgumentException("Invalid vein frequency setting for '"+n+"': chunk generation chance must be more than zero!");
 		if (c < 1 && v > 1)
-			CondensedOres.logger.log("Warning: Frequency Settings have <100% chance of spawning a vein yet a count of more than one vein per chunk. This is usually an error.");
+			CondensedOres.logger.log("Warning: Frequency Settings for '"+n+"' have <100% chance of spawning a vein yet a count of more than one vein per chunk. Though this works, this is usually an error.");
 		float f = CondensedOreOptions.FREQUENCY.getFloat();
 		if (f != 1) {
 			double vold = v;

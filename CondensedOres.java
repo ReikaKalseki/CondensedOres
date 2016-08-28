@@ -91,12 +91,13 @@ public class CondensedOres extends DragonAPIMod {
 	@EventHandler
 	public void postload(FMLPostInitializationEvent evt) {
 		this.startTiming(LoadPhase.POSTLOAD);
+		CondensedOreConfig.instance.loadConfigs();
 		this.finishTiming();
 	}
 
 	@EventHandler
 	public void loadComplete(FMLLoadCompleteEvent evt) {
-		CondensedOreConfig.instance.loadConfigs();
+
 	}
 
 	@EventHandler

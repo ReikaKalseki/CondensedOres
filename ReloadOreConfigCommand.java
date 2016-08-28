@@ -10,6 +10,7 @@
 package Reika.CondensedOres;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.EnumChatFormatting;
 import Reika.DragonAPI.Command.DragonCommandBase;
 
 
@@ -18,8 +19,10 @@ public class ReloadOreConfigCommand extends DragonCommandBase {
 	@Override
 	public void processCommand(ICommandSender ics, String[] args) {
 		CondensedOres.config.reload();
-		CondensedOreConfig.instance.loadConfigs();
+		int errored = CondensedOreConfig.instance.loadConfigs();
 		this.sendChatToSender(ics, "Ore config reloaded, "+CondensedOreConfig.instance.getOres().size()+" entries loaded.");
+		if (errored > 0)
+			this.sendChatToSender(ics, EnumChatFormatting.RED.toString()+errored+" entries errored.");
 	}
 
 	@Override

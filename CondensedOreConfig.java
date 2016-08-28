@@ -74,14 +74,16 @@ public class CondensedOreConfig {
 		rawData.put("base", base);
 	}
 
-	public void loadConfigs() {
+	/** Returns the number of entries that errored. */
+	public int loadConfigs() {
+		int ret = 0;
 		this.reset();
 		CondensedOres.logger.log("Loading configs.");
 		String sg = this.getSaveFolder();
 		File f = new File(sg); //parent dir
 		if (f.exists()) {
 			this.loadFiles(f);
-			this.parseConfigs();
+			ret += this.parseConfigs();
 
 			CondensedOres.logger.log("Configs loaded.");
 		}
@@ -94,6 +96,7 @@ public class CondensedOreConfig {
 				CondensedOres.logger.logError("Could not create ore config folder!");
 			}
 		}
+		return ret;
 	}
 
 	private void reset() {
@@ -114,15 +117,21 @@ public class CondensedOreConfig {
 	private void loadFile(File f) {
 		ArrayList<String> li = ReikaFileReader.getFileAsLines(f, false);
 		ArrayList<ArrayList<String>> data = new ArrayList();
+		int bracketLevel = 0;
 		for (String s : li) {
 			s = this.cleanString(s);
+			if (s.isEmpty())
+				continue;
+
 			if (s.contains("{")) {
+				bracketLevel++;
 				if (s.endsWith(" = {"))
 					s = s.substring(0, s.length()-4);
 				block = new LuaBlock(s, block);
 			}
 			else if (s.contains("}")) {
 				block = block.parent;
+				bracketLevel--;
 			}
 
 			if (!s.equals("{") && !s.equals("}") && !s.equals(block.name)) {
@@ -134,9 +143,16 @@ public class CondensedOreConfig {
 					block.data.put(String.valueOf(block.data.size()), s);
 			}
 		}
+
+		if (bracketLevel != 0) {
+			throw new IllegalArgumentException("Malformed file: bracket mismatch");
+		}
 	}
 
 	private String cleanString(String s) {
+		if (s.startsWith("//") || s.startsWith("--"))
+			return "";
+
 		s = s.replaceAll("\t", "");
 		if (s.contains("--")) {
 			s = s.substring(0, s.indexOf("--"));
@@ -151,7 +167,8 @@ public class CondensedOreConfig {
 		return s;
 	}
 
-	private void parseConfigs() {
+	private int parseConfigs() {
+		int ret = 0;
 		block = block.getTopParent();
 		for (LuaBlock b : block.children.values()) {
 			try {
@@ -169,9 +186,11 @@ public class CondensedOreConfig {
 			catch (Exception e) {
 				CondensedOres.logger.logError("Could not parse config section "+b.data.get("type")+": ");
 				e.printStackTrace();
+				ret++;
 			}
 		}
 		CondensedOres.logger.log("All config entries parsed.");
+		return ret;
 	}
 
 	private OreEntry parseEntry(LuaBlock b) throws NumberFormatException, IllegalArgumentException, IllegalStateException {
@@ -183,7 +202,7 @@ public class CondensedOreConfig {
 		HeightRule h = new HeightRule(height.getInt("minHeight"), height.getInt("maxHeight"), height.getString("variation"));
 
 		LuaBlock freq = b.getChild("veinFrequency");
-		FrequencyRule f = new FrequencyRule(freq.getDouble("veinsPerChunk"), freq.getDouble("chunkGenChance"));
+		FrequencyRule f = new FrequencyRule(name, freq.getDouble("veinsPerChunk"), freq.getDouble("chunkGenChance"));
 
 		LuaBlock biome = b.getChild("biomeRules");
 		BiomeRuleset br = new BiomeRuleset(biome.getString("combination"));
@@ -342,6 +361,7 @@ public class CondensedOreConfig {
 			requiredElements.add("block");
 			requiredElements.add("biomeID");
 			requiredElements.add("biomeName");
+			requiredElements.add("dimensionID");
 		}
 
 		private LuaBlock(String n, LuaBlock lb) {
