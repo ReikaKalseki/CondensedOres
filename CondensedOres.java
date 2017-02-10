@@ -140,4 +140,9 @@ public class CondensedOres extends DragonAPIMod {
 		return logger;
 	}
 
+	@Override
+	public File getConfigFolder() {
+		return config.getConfigFolder();
+	}
+
 }
