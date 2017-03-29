@@ -34,7 +34,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 
-@Mod( modid = "CondensedOres", name="CondensedOres", acceptableRemoteVersions="*", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
+@Mod( modid = "CondensedOres", name="CondensedOres", version = "v@MAJOR_VERSION@@MINOR_VERSION@", acceptableRemoteVersions="*", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
 public class CondensedOres extends DragonAPIMod {
 
 	@Instance("CondensedOres")
