@@ -1,8 +1,9 @@
 {
 	type = "documentation" --An internal ID; must be unique
-	inherit = "base" --The parent; anything not explicitly specified will be inherited, possibly recursively
+	inherit = "base" --The parent; anything not explicitly specified will be inherited, possibly recursively; consult base.lua to see the base values (base.lua is not loaded)
 	name = "Name" --A display name
 	sprinkleMix = true --If multiple ore blocks are specified, should it generate one per vein, or mix them all into every vein (sprinkle mix)?
+	retrogen = false --Should this ore rerun generation on chunks as they are loaded?
 	blocks = { --the list of all blocks that count as this ore type; one per line, formatted like Minetweaker would use them; any and all can generate. Note that they need not actually be ores; you can make it generate anything you like except TileEntities
 		"ModID:Name:Metadata"
 	}
@@ -38,11 +39,11 @@
 		}
 		{
 			type = "exclude" --Disallow this biome type
-			biomeName = "Rainbow Forest" --Can use names instead of IDs for types, or consult this http://i.imgur.com/I7wbd2b.png
+			biomeName = "Rainbow Forest" --Can use names instead of IDs for types
 		}
 		{
 			type = "dictionary-require" --Require a specific Forge BiomeDictionary tag
-			name = "forest" --see Forge for a list of all types
+			name = "forest" --see Forge for a list of all types, or consult this http://i.imgur.com/I7wbd2b.png
 		}
 		{
 			type = "dictionary-exclude" --Require that a specific Forge BiomeDict tag not be present

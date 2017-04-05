@@ -14,14 +14,17 @@ import java.util.HashSet;
 import java.util.Random;
 
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.IChunkProvider;
 import Reika.CondensedOres.CondensedOreOptions;
 import Reika.CondensedOres.CondensedOreVein;
 import Reika.CondensedOres.Control.BiomeRule.BiomeRuleset;
 import Reika.CondensedOres.Control.DimensionRule.DimensionRuleset;
+import Reika.DragonAPI.Auxiliary.Trackers.RetroGenController;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
+import Reika.DragonAPI.Interfaces.RetroactiveGenerator;
 
 
-public class OreEntry {
+public class OreEntry implements RetroactiveGenerator {
 
 	private final ArrayList<BlockKey> oreBlocks = new ArrayList();
 
@@ -35,14 +38,17 @@ public class OreEntry {
 	private final FrequencyRule frequency;
 	private final HeightRule height;
 
+	public final String ID;
 	public final String displayName;
 	private final int veinSize;
 
 	private CondensedOreVein vein;
 
 	public final boolean sprinkleOre;
+	public final boolean doRetrogen;
 
-	public OreEntry(String n, int size, boolean spr, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
+	public OreEntry(String id, String n, int size, boolean spr, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
+		ID = id;
 		displayName = n;
 		veinSize = (int)(size*CondensedOreOptions.SIZE.getFloat());
 		frequency = f;
@@ -51,6 +57,9 @@ public class OreEntry {
 		biomeRules = b;
 		neighbors = p;
 		sprinkleOre = spr;
+		doRetrogen = retro;
+		if (doRetrogen)
+			RetroGenController.instance.addRetroGenerator(this, 0);
 	}
 	/*
 	public OreEntry addBlock(Block b) {
@@ -144,6 +153,21 @@ public class OreEntry {
 
 	public boolean isEmpty() {
 		return oreBlocks.isEmpty();
+	}
+
+	@Override
+	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
+		this.generate(world, chunkX, chunkZ, random);
+	}
+
+	@Override
+	public boolean canGenerateAt(World world, int chunkX, int chunkZ) {
+		return true;
+	}
+
+	@Override
+	public String getIDString() {
+		return "CondensedOresPrototype_"+ID;
 	}
 
 }

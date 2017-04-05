@@ -10,9 +10,11 @@
 package Reika.CondensedOres;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import net.minecraft.block.Block;
@@ -45,7 +47,7 @@ public class CondensedOreConfig {
 
 	private LuaBlockDatabase data;
 
-	private final ArrayList<OreEntry> entries = new ArrayList();
+	private final HashMap<String, OreEntry> entries = new HashMap();
 
 	//Formatted, parsed, and used like Factorio prototypes with param1 = val1, param2 = {subparam2_1=subval2_1,subparam2_2=subval2_2} & inheritance
 	private CondensedOreConfig() {
@@ -53,6 +55,7 @@ public class CondensedOreConfig {
 		OreLuaBlock base = new OreLuaBlock("base", null, data);
 		base.putData("type", "base");
 		base.putData("sprinkleMix", "false");
+		base.putData("retrogen", "false");
 		base.putData("veinSize", "10");
 		//base.putData("generate", "true");
 		OreLuaBlock height = new OreLuaBlock("heightRule", base, data);
@@ -97,7 +100,23 @@ public class CondensedOreConfig {
 				CondensedOres.logger.logError("Could not create ore config folder!");
 			}
 		}
+		try {
+			this.createBaseFile(f);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			CondensedOres.logger.logError("Could not create base data file!");
+		}
 		return ret;
+	}
+
+	private void createBaseFile(File f) throws IOException {
+		File out = new File(f, "base.lua");
+		if (out.exists())
+			out.delete();
+		out.createNewFile();
+		ArrayList<String> li = data.getBlock("base").writeToStrings();
+		ReikaFileReader.writeLinesToFile(out, li, true);
 	}
 
 	private void reset() {
@@ -110,24 +129,28 @@ public class CondensedOreConfig {
 	private void loadFiles(File parent) {
 		ArrayList<File> files = ReikaFileReader.getAllFilesInFolder(parent, ".lua", ".ini", ".cfg", ".txt", ".yml");
 		for (File f : files) {
-			data.loadFromFile(f);
+			if (!f.getName().equals("base.lua"))
+				data.loadFromFile(f);
 		}
 	}
 
 	private int parseConfigs() {
 		int ret = 0;
+		int skip = 0;
 		LuaBlock root = data.getRootBlock();
 		for (LuaBlock b : root.getChildren()) {
 			try {
-				data.addBlock(b.getString("type"), b);
-				OreEntry ore = this.parseEntry(b);
+				String type = b.getString("type");
+				data.addBlock(type, b);
+				OreEntry ore = this.parseEntry(type, b);
 				ore.build();
 				if (!ore.isEmpty()) {
 					CondensedOres.logger.debug("Loaded ore prototype:\n"+ore);
-					entries.add(ore);
+					entries.put(type, ore);
 				}
 				else {
 					CondensedOres.logger.log("Ore prototype '"+ore.displayName+"' not loaded; no ores found.");
+					skip++;
 				}
 			}
 			catch (Exception e) {
@@ -136,14 +159,15 @@ public class CondensedOreConfig {
 				ret++;
 			}
 		}
-		CondensedOres.logger.log("All config entries parsed.");
+		CondensedOres.logger.log("All config entries parsed; "+skip+" skipped.");
 		return ret;
 	}
 
-	private OreEntry parseEntry(LuaBlock b) throws NumberFormatException, IllegalArgumentException, IllegalStateException {
+	private OreEntry parseEntry(String type, LuaBlock b) throws NumberFormatException, IllegalArgumentException, IllegalStateException {
 		String name = b.getString("name");
 		int size = b.getInt("veinSize");
 		boolean spr = b.getBoolean("sprinkleMix");
+		boolean retro = b.getBoolean("retrogen");
 
 		LuaBlock height = b.getChild("heightRule");
 		HeightRule h = new HeightRule(height.getInt("minHeight"), height.getInt("maxHeight"), height.getString("variation"));
@@ -172,7 +196,7 @@ public class CondensedOreConfig {
 			}
 		}
 
-		OreEntry ore = new OreEntry(name, size, spr, h, f, dim, br, p);
+		OreEntry ore = new OreEntry(type, name, size, spr, retro, h, f, dim, br, p);
 
 		LuaBlock blocks = b.getChild("blocks");
 		for (String s : blocks.getDataValues()) {
@@ -286,7 +310,11 @@ public class CondensedOreConfig {
 	}
 
 	public Collection<OreEntry> getOres() {
-		return Collections.unmodifiableCollection(entries);
+		return Collections.unmodifiableCollection(entries.values());
+	}
+
+	public OreEntry getOre(String name) {
+		return entries.get(name);
 	}
 
 	private static class OreLuaBlock extends LuaBlock {

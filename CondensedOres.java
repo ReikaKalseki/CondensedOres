@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
+import net.minecraftforge.event.world.ChunkEvent;
+
 import org.apache.commons.io.FileUtils;
 
 import Reika.DragonAPI.DragonAPICore;
@@ -32,6 +34,7 @@ import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 
 @Mod( modid = "CondensedOres", name="CondensedOres", version = "v@MAJOR_VERSION@@MINOR_VERSION@", acceptableRemoteVersions="*", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
@@ -108,6 +111,11 @@ public class CondensedOres extends DragonAPIMod {
 	@EventHandler
 	public void registerCommands(FMLServerStartingEvent evt) {
 		evt.registerServerCommand(new ReloadOreConfigCommand());
+	}
+
+	@SubscribeEvent
+	public void helpRetrogen(ChunkEvent.Load evt) {
+		//RetrogenOreCommand.onChunkLoad(evt.world, evt.getChunk());
 	}
 
 	@Override
