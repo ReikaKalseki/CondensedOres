@@ -86,7 +86,7 @@ public class CondensedOres extends DragonAPIMod {
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
 		this.startTiming(LoadPhase.LOAD);
-		RetroGenController.instance.addHybridGenerator(CondensedOreGenerator.instance, Integer.MAX_VALUE, false);
+		RetroGenController.instance.addHybridGenerator(CondensedOreGenerator.instance, Integer.MAX_VALUE-4, false);
 		this.finishTiming();
 	}
 
