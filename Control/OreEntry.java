@@ -9,24 +9,29 @@
  ******************************************************************************/
 package Reika.CondensedOres.Control;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import Reika.CondensedOres.CondensedOreOptions;
 import Reika.CondensedOres.CondensedOreVein;
+import Reika.CondensedOres.API.OreEntryBase;
 import Reika.CondensedOres.Control.BiomeRule.BiomeRuleset;
 import Reika.CondensedOres.Control.DimensionRule.DimensionRuleset;
 import Reika.DragonAPI.Auxiliary.Trackers.RetroGenController;
+import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler;
+import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler.WorldProfilerParent;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Interfaces.RetroactiveGenerator;
+import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 
 
-public class OreEntry implements RetroactiveGenerator {
+public final class OreEntry extends OreEntryBase implements RetroactiveGenerator, WorldProfilerParent {
 
-	private final ArrayList<BlockKey> oreBlocks = new ArrayList();
+	private final HashSet<BlockKey> oreBlocks = new HashSet();
 
 	private final DimensionRuleset dimensionRules;
 	private final BiomeRuleset biomeRules;
@@ -38,8 +43,6 @@ public class OreEntry implements RetroactiveGenerator {
 	private final FrequencyRule frequency;
 	private final HeightRule height;
 
-	public final String ID;
-	public final String displayName;
 	private final int veinSize;
 
 	private CondensedOreVein vein;
@@ -48,8 +51,7 @@ public class OreEntry implements RetroactiveGenerator {
 	public final boolean doRetrogen;
 
 	public OreEntry(String id, String n, int size, boolean spr, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
-		ID = id;
-		displayName = n;
+		super(id, n);
 		veinSize = (int)(size*CondensedOreOptions.SIZE.getFloat());
 		frequency = f;
 		height = h;
@@ -71,8 +73,7 @@ public class OreEntry implements RetroactiveGenerator {
 	}
 	 */
 	public OreEntry addBlock(BlockKey bk) {
-		if (!oreBlocks.contains(bk))
-			oreBlocks.add(bk);
+		oreBlocks.add(bk);
 		return this;
 	}
 
@@ -93,23 +94,33 @@ public class OreEntry implements RetroactiveGenerator {
 
 	public OreEntry build() {
 		vein = new CondensedOreVein(this, oreBlocks, veinSize);
+		WorldgenProfiler.registerGeneratorAsSubGenerator(this, vein);
 		return this;
 	}
 
+	public Set<BlockKey> getBlockTypes() {
+		return Collections.unmodifiableSet(oreBlocks);
+	}
+
 	@Override
-	public String toString() {
+	public String info() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Name: "+displayName+"\n");
 		sb.append("Mix: "+(sprinkleOre ? "Sprinkle" : "One Per Vein")+"\n");
 		sb.append("Vein Size: "+veinSize+"\n");
-		sb.append("Blocks: "+oreBlocks+"\n");
+		sb.append("Blocks: "+oreBlocks.size()+" -> "+ReikaJavaLibrary.makeSortedListFromCollection(oreBlocks, BlockKey.class)+"\n");
 		sb.append("Height: "+height+"\n");
 		sb.append("Frequency: "+frequency+"\n");
 		sb.append("Biomes: "+biomeRules+"\n");
 		sb.append("Dimensions: "+dimensionRules+"\n");
-		sb.append("Spawn Blocks: "+blockRules+"\n");
+		sb.append("Spawn Blocks: "+String.valueOf(blockRules).replace(":-1", "")+"\n");
 		sb.append("Proximity Rules: "+neighbors+"\n");
 		return sb.toString();
+	}
+
+	@Override
+	public String toString() {
+		return this.info();
 	}
 
 	public void generate(World world, int chunkX, int chunkZ, Random random) {
@@ -117,8 +128,8 @@ public class OreEntry implements RetroactiveGenerator {
 		chunkZ *= 16;
 		boolean flag = false;
 		if (frequency.generate(chunkX, chunkZ, random)) {
-			if (dimensionRules.isValidDimension(world)) {
-				if (biomeRules.isValidBiome(world, chunkX, chunkZ)) {
+			if (this.isValidDimension(world)) {
+				if (this.isValidBiome(world, chunkX, chunkZ)) {
 					int n = frequency.getVeinCount(chunkX, chunkZ, random);
 					for (int i = 0; i < n; i++) {
 						int x = chunkX + random.nextInt(16);
@@ -137,18 +148,45 @@ public class OreEntry implements RetroactiveGenerator {
 		//}
 	}
 
+	@Override
+	public boolean isValidDimension(World world) {
+		return dimensionRules.isValidDimension(world);
+	}
+
+	@Override
+	public boolean isValidBiome(World world, int x, int z) {
+		return biomeRules.isValidBiome(world, x, z);
+	}
+
 	private boolean placeVein(World world, int x, int y, int z, Random random) {
+		this.startProfiling(world, x, z);
 		BlockKey at = BlockKey.getAt(world, x, y, z);
 		if (blockRules.contains(at)) {
 			if (neighbors.isLocationValid(world, x, y, z)) {
 				vein.target = at.blockID;
 				vein.proximity = neighbors;
 				if (vein.generate(world, random, x, y, z)) {
+					this.finishProfiling(world, x, z);
 					return true;
 				}
 			}
 		}
+		this.finishProfiling(world, x, z);
 		return false;
+	}
+
+	private void startProfiling(World world, int x, int z) {
+		if (WorldgenProfiler.profilingEnabled())
+			WorldgenProfiler.startGenerator(world, this.getWorldgenProfilerID(), x >> 4, z >> 4);
+	}
+
+	private void finishProfiling(World world, int x, int z) {
+		if (WorldgenProfiler.profilingEnabled())
+			WorldgenProfiler.onRunGenerator(world, this.getWorldgenProfilerID(), x >> 4, z >> 4);
+	}
+
+	public final String getWorldgenProfilerID() {
+		return "Condensed Ore "+ID;
 	}
 
 	public boolean isEmpty() {

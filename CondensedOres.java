@@ -13,10 +13,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
+import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.world.ChunkEvent;
 
 import org.apache.commons.io.FileUtils;
 
+import Reika.CondensedOres.API.CondensedOreAPI;
 import Reika.DragonAPI.DragonAPICore;
 import Reika.DragonAPI.DragonOptions;
 import Reika.DragonAPI.Auxiliary.Trackers.CommandableUpdateChecker;
@@ -34,6 +36,8 @@ import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.eventhandler.Event.Result;
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 
@@ -61,6 +65,8 @@ public class CondensedOres extends DragonAPIMod {
 			logger.setOutput("**_Loading_Log.log");
 
 		//CondensedOreConfig.instance.loadConfigs(); //for initial testing
+
+		CondensedOreAPI.instance = new OreAPIImplementation();
 
 		if (!this.isSource())
 			this.makeExampleFile(config.getConfigFolder());
@@ -151,6 +157,13 @@ public class CondensedOres extends DragonAPIMod {
 	@Override
 	public File getConfigFolder() {
 		return config.getConfigFolder();
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void noOres(GenerateMinable evt) {
+		if (!CondensedOreConfig.instance.getOres().isEmpty() && CondensedOreOptions.NOVANILLAGEN.getState())
+			if (evt.type != evt.type.GRAVEL && evt.type != evt.type.DIRT && evt.type != evt.type.CUSTOM)
+				evt.setResult(Result.DENY);
 	}
 
 }

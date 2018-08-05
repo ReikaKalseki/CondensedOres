@@ -10,6 +10,7 @@
 package Reika.CondensedOres;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -19,9 +20,10 @@ import net.minecraft.world.gen.feature.WorldGenerator;
 import Reika.CondensedOres.Control.OreEntry;
 import Reika.CondensedOres.Control.ProximityRule;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
+import Reika.DragonAPI.Interfaces.Subgenerator;
 
 
-public class CondensedOreVein extends WorldGenerator {
+public class CondensedOreVein extends WorldGenerator implements Subgenerator {
 
 	private final OreEntry ore;
 	private final ArrayList<BlockKey> blocks;
@@ -30,9 +32,9 @@ public class CondensedOreVein extends WorldGenerator {
 	public Block target;
 	public ProximityRule proximity;
 
-	public CondensedOreVein(OreEntry o, ArrayList<BlockKey> blocks, int number) {
+	public CondensedOreVein(OreEntry o, Collection<BlockKey> blocks, int number) {
 		ore = o;
-		this.blocks = blocks;
+		this.blocks = new ArrayList(blocks);
 		veinSize = number;
 	}
 
@@ -97,6 +99,11 @@ public class CondensedOreVein extends WorldGenerator {
 
 	private BlockKey getRandomOre(Random rand) {
 		return blocks.get(rand.nextInt(blocks.size()));
+	}
+
+	@Override
+	public Object getParentGenerator() {
+		return ore;
 	}
 
 }

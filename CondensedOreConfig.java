@@ -20,6 +20,7 @@ import java.util.HashSet;
 import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
+import Reika.CondensedOres.API.CondensedOreAPI;
 import Reika.CondensedOres.Control.BiomeRule;
 import Reika.CondensedOres.Control.BiomeRule.BiomeDictionaryExclusion;
 import Reika.CondensedOres.Control.BiomeRule.BiomeDictionaryRequirement;
@@ -120,6 +121,7 @@ public class CondensedOreConfig {
 	}
 
 	private void reset() {
+		((OreAPIImplementation)CondensedOreAPI.instance).resetGenCache();
 		LuaBlock base = data.getBlock("base");
 		data = new LuaBlockDatabase();
 		entries.clear();

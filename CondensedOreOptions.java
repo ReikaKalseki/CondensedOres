@@ -9,13 +9,15 @@
  ******************************************************************************/
 package Reika.CondensedOres;
 
+import Reika.DragonAPI.Interfaces.Configuration.BooleanConfig;
 import Reika.DragonAPI.Interfaces.Configuration.DecimalConfig;
 
 
-public enum CondensedOreOptions implements DecimalConfig {
+public enum CondensedOreOptions implements DecimalConfig, BooleanConfig {
 
 	FREQUENCY("Global Frequency Multiplier", 1F),
-	SIZE("Global Size Multiplier", 1F);
+	SIZE("Global Size Multiplier", 1F),
+	NOVANILLAGEN("Prevent Vanilla Ore Generation", true);
 
 	private String label;
 	private boolean defaultState;
