@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -20,6 +20,7 @@ import java.util.HashSet;
 import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
+
 import Reika.CondensedOres.API.CondensedOreAPI;
 import Reika.CondensedOres.Control.BiomeRule;
 import Reika.CondensedOres.Control.BiomeRule.BiomeDictionaryExclusion;
@@ -36,6 +37,7 @@ import Reika.CondensedOres.Control.HeightRule;
 import Reika.CondensedOres.Control.OreEntry;
 import Reika.CondensedOres.Control.ProximityRule;
 import Reika.DragonAPI.IO.ReikaFileReader;
+import Reika.DragonAPI.Instantiable.Data.WeightedRandom;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Instantiable.IO.LuaBlock;
 import Reika.DragonAPI.Instantiable.IO.LuaBlock.LuaBlockDatabase;
@@ -200,11 +202,21 @@ public class CondensedOreConfig {
 
 		OreEntry ore = new OreEntry(type, name, size, spr, retro, h, f, dim, br, p);
 
-		LuaBlock blocks = b.getChild("blocks");
-		for (String s : blocks.getDataValues()) {
-			BlockKey bk = this.parseBlockKey(s);
-			if (bk != null)
-				ore.addBlock(bk);
+		LuaBlock set = b.getChild("blockSet");
+		if (set != null) {
+			WeightedRandom<String> wr = set.asWeightedRandom();
+			for (String s : wr.getValues()) {
+				BlockKey bk = this.parseBlockKey(s);
+				ore.addBlock(bk, wr.getWeight(s));
+			}
+		}
+		else {
+			LuaBlock blocks = b.getChild("blocks");
+			for (String s : blocks.getDataValues()) {
+				BlockKey bk = this.parseBlockKey(s);
+				if (bk != null)
+					ore.addBlock(bk, 10);
+			}
 		}
 
 		LuaBlock spawn = b.getChild("spawnBlock");

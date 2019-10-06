@@ -14,6 +14,7 @@ import java.util.HashMap;
 
 import net.minecraft.block.Block;
 import net.minecraftforge.oredict.OreDictionary;
+
 import Reika.CondensedOres.API.CondensedOreAPI;
 import Reika.CondensedOres.API.OreEntryBase;
 import Reika.CondensedOres.Control.OreEntry;

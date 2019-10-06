@@ -14,6 +14,7 @@ import java.util.Random;
 
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
+
 import Reika.CondensedOres.Control.OreEntry;
 import Reika.DragonAPI.Interfaces.RetroactiveGenerator;
 
@@ -31,7 +32,12 @@ public class CondensedOreGenerator implements RetroactiveGenerator {
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
 		Collection<OreEntry> c = CondensedOreConfig.instance.getOres();
 		for (OreEntry ore : c) {
-			ore.generate(world, chunkX, chunkZ, random);
+			try {
+				ore.generate(world, chunkX, chunkZ, random);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Failed to generate ore entry "+ore.ID+"; it was likely defined incorrectly!", e);
+			}
 		}
 	}
 

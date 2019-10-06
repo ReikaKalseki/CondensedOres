@@ -10,6 +10,7 @@
 package Reika.CondensedOres.Control;
 
 import net.minecraft.block.Block;
+
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 
 @Deprecated

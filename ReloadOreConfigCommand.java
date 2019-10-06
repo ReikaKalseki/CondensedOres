@@ -11,6 +11,7 @@ package Reika.CondensedOres;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.EnumChatFormatting;
+
 import Reika.DragonAPI.Command.DragonCommandBase;
 
 

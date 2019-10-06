@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -16,6 +16,7 @@ import java.util.Set;
 
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
+
 import Reika.CondensedOres.CondensedOreOptions;
 import Reika.CondensedOres.CondensedOreVein;
 import Reika.CondensedOres.API.OreEntryBase;
@@ -24,6 +25,7 @@ import Reika.CondensedOres.Control.DimensionRule.DimensionRuleset;
 import Reika.DragonAPI.Auxiliary.Trackers.RetroGenController;
 import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler;
 import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler.WorldProfilerParent;
+import Reika.DragonAPI.Instantiable.Data.WeightedRandom;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Interfaces.RetroactiveGenerator;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
@@ -31,7 +33,7 @@ import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 
 public final class OreEntry extends OreEntryBase implements RetroactiveGenerator, WorldProfilerParent {
 
-	private final HashSet<BlockKey> oreBlocks = new HashSet();
+	private final WeightedRandom<BlockKey> oreBlocks = new WeightedRandom();
 
 	private final DimensionRuleset dimensionRules;
 	private final BiomeRuleset biomeRules;
@@ -72,8 +74,8 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 		return this.addBlock(new BlockKey(b, meta));
 	}
 	 */
-	public OreEntry addBlock(BlockKey bk) {
-		oreBlocks.add(bk);
+	public OreEntry addBlock(BlockKey bk, double wt) {
+		oreBlocks.addEntry(bk, wt);
 		return this;
 	}
 
@@ -99,7 +101,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	}
 
 	public Set<BlockKey> getBlockTypes() {
-		return Collections.unmodifiableSet(oreBlocks);
+		return Collections.unmodifiableSet(oreBlocks.getValues());
 	}
 
 	@Override
@@ -108,7 +110,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 		sb.append("Name: "+displayName+"\n");
 		sb.append("Mix: "+(sprinkleOre ? "Sprinkle" : "One Per Vein")+"\n");
 		sb.append("Vein Size: "+veinSize+"\n");
-		sb.append("Blocks: "+oreBlocks.size()+" -> "+ReikaJavaLibrary.makeSortedListFromCollection(oreBlocks, BlockKey.class)+"\n");
+		sb.append("Blocks: "+oreBlocks.size()+" -> "+ReikaJavaLibrary.makeSortedListFromCollection(oreBlocks.getValues(), BlockKey.class)+"\n");
 		sb.append("Height: "+height+"\n");
 		sb.append("Frequency: "+frequency+"\n");
 		sb.append("Biomes: "+biomeRules+"\n");
