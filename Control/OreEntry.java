@@ -31,7 +31,7 @@ import Reika.DragonAPI.Interfaces.RetroactiveGenerator;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 
 
-public final class OreEntry extends OreEntryBase implements RetroactiveGenerator, WorldProfilerParent {
+public final class OreEntry extends OreEntryBase implements RetroactiveGenerator, WorldProfilerParent, Comparable<OreEntry> {
 
 	private final WeightedRandom<BlockKey> oreBlocks = new WeightedRandom();
 
@@ -51,8 +51,9 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 
 	public final boolean sprinkleOre;
 	public final boolean doRetrogen;
+	public final int sortOrder;
 
-	public OreEntry(String id, String n, int size, boolean spr, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
+	public OreEntry(String id, String n, int size, int order, boolean spr, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
 		super(id, n);
 		veinSize = (int)(size*CondensedOreOptions.SIZE.getFloat());
 		frequency = f;
@@ -62,6 +63,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 		neighbors = p;
 		sprinkleOre = spr;
 		doRetrogen = retro;
+		sortOrder = order;
 		if (doRetrogen)
 			RetroGenController.instance.addRetroGenerator(this, 0);
 	}
@@ -208,6 +210,11 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	@Override
 	public String getIDString() {
 		return "CondensedOresPrototype_"+ID;
+	}
+
+	@Override
+	public int compareTo(OreEntry o) {
+		return Integer.compare(sortOrder, o.sortOrder);
 	}
 
 }

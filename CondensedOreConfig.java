@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -51,6 +52,7 @@ public class CondensedOreConfig {
 	private LuaBlockDatabase data;
 
 	private final HashMap<String, OreEntry> entries = new HashMap();
+	private ArrayList<OreEntry> sortedSet;
 
 	//Formatted, parsed, and used like Factorio prototypes with param1 = val1, param2 = {subparam2_1=subval2_1,subparam2_2=subval2_2} & inheritance
 	private CondensedOreConfig() {
@@ -127,6 +129,7 @@ public class CondensedOreConfig {
 		LuaBlock base = data.getBlock("base");
 		data = new LuaBlockDatabase();
 		entries.clear();
+		sortedSet = null;
 		data.addBlock("base", base);
 	}
 
@@ -172,6 +175,7 @@ public class CondensedOreConfig {
 		int size = b.getInt("veinSize");
 		boolean spr = b.getBoolean("sprinkleMix");
 		boolean retro = b.getBoolean("retrogen");
+		int order = b.getInt("sortOrder");
 
 		LuaBlock height = b.getChild("heightRule");
 		HeightRule h = new HeightRule(height.getInt("minHeight"), height.getInt("maxHeight"), height.getString("variation"));
@@ -200,7 +204,7 @@ public class CondensedOreConfig {
 			}
 		}
 
-		OreEntry ore = new OreEntry(type, name, size, spr, retro, h, f, dim, br, p);
+		OreEntry ore = new OreEntry(type, name, size, order, spr, retro, h, f, dim, br, p);
 
 		LuaBlock set = b.getChild("blockSet");
 		if (set != null) {
@@ -325,6 +329,14 @@ public class CondensedOreConfig {
 
 	public Collection<OreEntry> getOres() {
 		return Collections.unmodifiableCollection(entries.values());
+	}
+
+	public List<OreEntry> getOresSorted() {
+		if (sortedSet == null || sortedSet.isEmpty()) {
+			sortedSet = new ArrayList(entries.values());
+			Collections.sort(sortedSet);
+		}
+		return Collections.unmodifiableList(sortedSet);
 	}
 
 	public OreEntry getOre(String name) {

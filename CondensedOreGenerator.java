@@ -1,15 +1,15 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
  ******************************************************************************/
 package Reika.CondensedOres;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.world.World;
@@ -30,7 +30,7 @@ public class CondensedOreGenerator implements RetroactiveGenerator {
 
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
-		Collection<OreEntry> c = CondensedOreConfig.instance.getOres();
+		List<OreEntry> c = CondensedOreConfig.instance.getOresSorted();
 		for (OreEntry ore : c) {
 			try {
 				ore.generate(world, chunkX, chunkZ, random);
