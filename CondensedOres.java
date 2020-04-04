@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -15,6 +15,7 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.world.ChunkEvent;
 
@@ -29,6 +30,7 @@ import Reika.DragonAPI.IO.ReikaFileReader;
 import Reika.DragonAPI.Instantiable.IO.ControlledConfig;
 import Reika.DragonAPI.Instantiable.IO.ModLogger;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -40,6 +42,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
 
 
 @Mod( modid = "CondensedOres", name="CondensedOres", version = "v@MAJOR_VERSION@@MINOR_VERSION@", acceptableRemoteVersions="*", certificateFingerprint = "@GET_FINGERPRINT@", dependencies="required-after:DragonAPI")
@@ -102,6 +105,11 @@ public class CondensedOres extends DragonAPIMod {
 	public void postload(FMLPostInitializationEvent evt) {
 		this.startTiming(LoadPhase.POSTLOAD);
 		CondensedOreConfig.instance.loadConfigs();
+
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+			ClientCommandHandler.instance.registerCommand(new PlotOreDistributionCommand());
+		}
+
 		this.finishTiming();
 	}
 

@@ -28,7 +28,10 @@ import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler.WorldProfilerParent;
 import Reika.DragonAPI.Instantiable.Data.WeightedRandom;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Interfaces.RetroactiveGenerator;
+import Reika.DragonAPI.Interfaces.Registry.OreType;
 import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
+import Reika.DragonAPI.Libraries.Registry.ReikaOreHelper;
+import Reika.DragonAPI.ModRegistry.ModOreList;
 
 
 public final class OreEntry extends OreEntryBase implements RetroactiveGenerator, WorldProfilerParent, Comparable<OreEntry> {
@@ -42,10 +45,10 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 
 	private final HashSet<BlockKey> blockRules = new HashSet();
 
-	private final FrequencyRule frequency;
-	private final HeightRule height;
+	public final FrequencyRule frequency;
+	public final HeightRule height;
 
-	private final int veinSize;
+	public final int veinSize;
 
 	private CondensedOreVein vein;
 
@@ -215,6 +218,29 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	@Override
 	public int compareTo(OreEntry o) {
 		return Integer.compare(sortOrder, o.sortOrder);
+	}
+
+	public int getRenderColor() {
+		OreType ore = this.getOreEntry();
+		return ore != null ? ore.getDisplayColor() : 0xffD47EFF;
+	}
+
+	private OreType getOreEntry() {
+		OreType ore = null;
+		for (BlockKey bk : oreBlocks.getValues()) {
+			ore = ReikaOreHelper.getFromVanillaOre(bk.blockID);
+			if (ore != null)
+				break;
+			ore = ModOreList.getModOreFromOre(bk.blockID, bk.metadata);
+			if (ore != null)
+				break;
+		}
+		return ore;
+	}
+
+	public int getEnumIndex() {
+		OreType ore = this.getOreEntry();
+		return ore instanceof ReikaOreHelper ? ((ReikaOreHelper)ore).ordinal() : (ore instanceof ModOreList ? ((ModOreList)ore).ordinal()+100 : Integer.MAX_VALUE);
 	}
 
 }

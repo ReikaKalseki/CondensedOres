@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -62,7 +62,7 @@ public class HeightRule {
 				case LINEAR:
 					return y1+rand.nextInt(1+y2-y1);
 				case NORMAL:
-					return MathHelper.clamp_int(mid+(int)((range/2D)*rand.nextGaussian()/3D), y1, y2);
+					return MathHelper.clamp_int((int)Math.round(mid+(range/2D)*rand.nextGaussian()), y1, y2);
 				case PYRAMID:
 					double F = range/(double)(mid-y1);
 					double val = rand.nextDouble();
@@ -74,6 +74,22 @@ public class HeightRule {
 					}
 			}
 			return -1;
+		}
+
+		public double getNormalizedChanceAt(int y1, int y2, int y) {
+			switch(this) {
+				case LINEAR:
+					return 1;
+				case NORMAL:
+					return -1; //I have no f$%^ing idea
+				case PYRAMID:
+					double ctr = (y1+y2)/2D;
+					double range = y2-y1;
+					double diff = Math.abs(y-ctr);
+					double f = diff*2/range;
+					return 1-f;
+			}
+			return 0;
 		}
 
 		static {

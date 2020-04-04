@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2017
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -18,8 +18,8 @@ import Reika.CondensedOres.CondensedOres;
 public class FrequencyRule {
 
 	private final String oreName;
-	private final double chunkGenChance;
-	private final double veinsPerChunk;
+	public final double chunkGenChance;
+	public final double veinsPerChunk;
 
 	public FrequencyRule(String n, double v, double c) {
 		oreName = n;
