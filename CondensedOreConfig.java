@@ -42,6 +42,7 @@ import Reika.DragonAPI.Instantiable.Data.WeightedRandom;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
 import Reika.DragonAPI.Instantiable.IO.LuaBlock;
 import Reika.DragonAPI.Instantiable.IO.LuaBlock.LuaBlockDatabase;
+import Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary;
 import Reika.DragonAPI.Libraries.World.ReikaBiomeHelper;
 
 
@@ -162,6 +163,8 @@ public class CondensedOreConfig {
 			}
 			catch (Exception e) {
 				CondensedOres.logger.logError("Could not parse config section "+b.getString("type")+": ");
+				ReikaJavaLibrary.pConsole(b);
+				ReikaJavaLibrary.pConsole("----------------------Cause------------------------");
 				e.printStackTrace();
 				ret++;
 			}
@@ -178,24 +181,34 @@ public class CondensedOreConfig {
 		int order = b.getInt("sortOrder");
 
 		LuaBlock height = b.getChild("heightRule");
+		if (height == null)
+			throw new IllegalStateException("Entry is missing height rule!");
 		HeightRule h = new HeightRule(height.getInt("minHeight"), height.getInt("maxHeight"), height.getString("variation"));
 
 		LuaBlock freq = b.getChild("veinFrequency");
+		if (freq == null)
+			throw new IllegalStateException("Entry is missing frequency!");
 		FrequencyRule f = new FrequencyRule(name, freq.getDouble("veinsPerChunk"), freq.getDouble("chunkGenChance"));
 
 		LuaBlock biome = b.getChild("biomeRules");
+		if (biome == null)
+			throw new IllegalStateException("Entry is missing biome rule!");
 		BiomeRuleset br = new BiomeRuleset(biome.getString("combination"));
 		for (LuaBlock sub : biome.getChildren()) {
 			br.addRule(this.parseBiomeRule(sub));
 		}
 
 		LuaBlock dimension = b.getChild("dimensionRules");
+		if (dimension == null)
+			throw new IllegalStateException("Entry is missing dimension rule!");
 		DimensionRuleset dim = new DimensionRuleset(dimension.getString("combination"));
 		for (LuaBlock sub : dimension.getChildren()) {
 			dim.addRule(this.parseDimensionRule(sub));
 		}
 
 		LuaBlock prox = b.getChild("proximityRules");
+		if (prox == null)
+			throw new IllegalStateException("Entry is missing proximity rules!");
 		ProximityRule p = new ProximityRule(prox.getBoolean("strict"));
 		for (LuaBlock sub : prox.getChildren()) {
 			Collection<BlockKey> keys = this.parseBlocks(sub);
