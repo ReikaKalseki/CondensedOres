@@ -1,8 +1,8 @@
 /*******************************************************************************
  * @author Reika Kalseki
- * 
+ *
  * Copyright 2018
- * 
+ *
  * All rights reserved.
  * Distribution of the software in any form is only allowed with
  * explicit, prior permission from the owner.
@@ -10,6 +10,7 @@
 package Reika.CondensedOres;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import net.minecraft.block.Block;
@@ -30,13 +31,13 @@ public class OreAPIImplementation extends CondensedOreAPI {
 	}
 
 	@Override
-	public ArrayList<OreEntryBase> getGeneratorsFor(Block b) {
+	public Collection<OreEntryBase> getGeneratorsFor(Block b) {
 		return this.getGeneratorsFor(b, OreDictionary.WILDCARD_VALUE);
 	}
 
 	@Override
-	public ArrayList<OreEntryBase> getGeneratorsFor(Block b, int meta) {
-		ArrayList<OreEntryBase> li = new ArrayList();
+	public Collection<OreEntryBase> getGeneratorsFor(Block b, int meta) {
+		Collection<OreEntryBase> li = new ArrayList();
 		BlockKey bk = new BlockKey(b, meta);
 		for (OreEntry e : CondensedOreConfig.instance.getOres()) {
 			if (e.getBlockTypes().contains(bk)) {
@@ -55,6 +56,16 @@ public class OreAPIImplementation extends CondensedOreAPI {
 			canGenerate.put(bk, flag);
 		}
 		return flag.booleanValue();
+	}
+
+	@Override
+	public Collection<OreEntryBase> getAllGenerators() {
+		return (Collection)CondensedOreConfig.instance.getOres();
+	}
+
+	@Override
+	public OreEntryBase getGeneratorByName(String s) {
+		return CondensedOreConfig.instance.getOre(s);
 	}
 
 }

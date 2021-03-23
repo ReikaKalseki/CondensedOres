@@ -14,12 +14,15 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraftforge.common.MinecraftForge;
 
 import Reika.CondensedOres.CondensedOreOptions;
 import Reika.CondensedOres.CondensedOreVein;
 import Reika.CondensedOres.API.OreEntryBase;
+import Reika.CondensedOres.API.VeinGenerationEvent;
 import Reika.CondensedOres.Control.BiomeRule.BiomeRuleset;
 import Reika.CondensedOres.Control.DimensionRule.DimensionRuleset;
 import Reika.DragonAPI.Auxiliary.Trackers.RetroGenController;
@@ -241,6 +244,10 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	public int getEnumIndex() {
 		OreType ore = this.getOreEntry();
 		return ore instanceof ReikaOreHelper ? ((ReikaOreHelper)ore).ordinal() : (ore instanceof ModOreList ? ((ModOreList)ore).ordinal()+100 : Integer.MAX_VALUE);
+	}
+
+	public void onVeinGenerated(World world, Vec3 center) {
+		MinecraftForge.EVENT_BUS.post(new VeinGenerationEvent(world, this, center));
 	}
 
 }

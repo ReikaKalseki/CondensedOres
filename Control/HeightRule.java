@@ -12,7 +12,7 @@ package Reika.CondensedOres.Control;
 import java.util.HashMap;
 import java.util.Random;
 
-import net.minecraft.util.MathHelper;
+import Reika.DragonAPI.Libraries.Java.ReikaRandomHelper;
 
 
 public class HeightRule {
@@ -60,9 +60,13 @@ public class HeightRule {
 		private final int getRandomizedY(int y1, int y2, int mid, int range, Random rand) {
 			switch(this) {
 				case LINEAR:
-					return y1+rand.nextInt(1+y2-y1);
+					return ReikaRandomHelper.getRandomBetween(y1, y2, rand);
 				case NORMAL:
-					return MathHelper.clamp_int((int)Math.round(mid+(range/2D)*rand.nextGaussian()), y1, y2);
+					double randVal = mid+(range/2D)*rand.nextGaussian()*0.6;
+					while (randVal < y1 || randVal > y2) {
+						randVal = mid+(range/2D)*rand.nextGaussian()*0.6;
+					}
+					return (int)Math.round(randVal);
 				case PYRAMID:
 					double F = range/(double)(mid-y1);
 					double val = rand.nextDouble();

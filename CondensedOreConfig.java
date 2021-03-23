@@ -89,8 +89,7 @@ public class CondensedOreConfig {
 		int ret = 0;
 		this.reset();
 		CondensedOres.logger.log("Loading configs.");
-		String sg = this.getSaveFolder();
-		File f = new File(sg); //parent dir
+		File f = this.getSaveFolder(); //parent dir
 		if (f.exists()) {
 			this.loadFiles(f);
 			ret += this.parseConfigs();
@@ -336,8 +335,8 @@ public class CondensedOreConfig {
 	}
 	 */
 
-	private final String getSaveFolder() {
-		return CondensedOres.config.getConfigFolder().getAbsolutePath()+"/CondensedOres_Files/";
+	private final File getSaveFolder() {
+		return new File(CondensedOres.config.getConfigFolder(), "CondensedOres_Files");
 	}
 
 	public Collection<OreEntry> getOres() {
