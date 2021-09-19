@@ -62,6 +62,7 @@ public class CondensedOreConfig {
 		base.putData("type", "base");
 		base.putData("sprinkleMix", "false");
 		base.putData("retrogen", "false");
+		base.putData("sortOrder", "0");
 		base.putData("veinSize", "10");
 		//base.putData("generate", "true");
 		OreLuaBlock height = new OreLuaBlock("heightRule", base, data);
@@ -79,7 +80,7 @@ public class CondensedOreConfig {
 		OreLuaBlock biome = new OreLuaBlock("biomeRules", base, data);
 		biome.putData("combination", "or");
 		OreLuaBlock neighbor = new OreLuaBlock("proximityRules", base, data);
-		biome.putData("strict", "false");
+		neighbor.putData("strict", "false");
 		OreLuaBlock ores = new OreLuaBlock("blocks", base, data);
 		data.addBlock("base", base);
 	}
