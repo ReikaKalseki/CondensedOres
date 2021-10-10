@@ -58,8 +58,10 @@ public class CondensedOreConfig {
 	//Formatted, parsed, and used like Factorio prototypes with param1 = val1, param2 = {subparam2_1=subval2_1,subparam2_2=subval2_2} & inheritance
 	private CondensedOreConfig() {
 		data = new LuaBlockDatabase();
+		data.defaultBlockType = OreLuaBlock.class;
 		OreLuaBlock base = new OreLuaBlock("base", null, data);
 		base.putData("type", "base");
+		base.putData("isInheritOnly", "true");
 		base.putData("sprinkleMix", "false");
 		base.putData("retrogen", "false");
 		base.putData("sortOrder", "0");
@@ -129,6 +131,7 @@ public class CondensedOreConfig {
 		((OreAPIImplementation)CondensedOreAPI.instance).resetGenCache();
 		LuaBlock base = data.getBlock("base");
 		data = new LuaBlockDatabase();
+		data.defaultBlockType = OreLuaBlock.class;
 		entries.clear();
 		sortedSet = null;
 		data.addBlock("base", base);
@@ -144,32 +147,38 @@ public class CondensedOreConfig {
 
 	private int parseConfigs() {
 		int ret = 0;
-		int skip = 0;
+		HashSet<String> skip = new HashSet();
 		LuaBlock root = data.getRootBlock();
 		for (LuaBlock b : root.getChildren()) {
-			try {
-				String type = b.getString("type");
-				data.addBlock(type, b);
-				OreEntry ore = this.parseEntry(type, b);
-				ore.build();
-				if (!ore.isEmpty()) {
-					CondensedOres.logger.debug("Loaded ore prototype:\n"+ore);
-					entries.put(type, ore);
-				}
-				else {
-					CondensedOres.logger.log("Ore prototype '"+ore.displayName+"' not loaded; no ores found.");
-					skip++;
-				}
+			String type = b.getString("type");
+			if (b.getBoolean("isInheritOnly")) {
+				CondensedOres.logger.log("Ore prototype '"+type+"' not loaded; marked as for inheritance only.");
+				skip.add(type);
 			}
-			catch (Exception e) {
-				CondensedOres.logger.logError("Could not parse config section "+b.getString("type")+": ");
-				ReikaJavaLibrary.pConsole(b);
-				ReikaJavaLibrary.pConsole("----------------------Cause------------------------");
-				e.printStackTrace();
-				ret++;
+			else {
+				try {
+					data.addBlock(type, b);
+					OreEntry ore = this.parseEntry(type, b);
+					ore.build();
+					if (!ore.isEmpty()) {
+						CondensedOres.logger.debug("Loaded ore prototype:\n"+ore);
+						entries.put(type, ore);
+					}
+					else {
+						CondensedOres.logger.log("Ore prototype '"+ore.displayName+"' not loaded; no ores found.");
+						skip.add(type);
+					}
+				}
+				catch (Exception e) {
+					CondensedOres.logger.logError("Could not parse config section "+b.getString("type")+": ");
+					ReikaJavaLibrary.pConsole(b);
+					ReikaJavaLibrary.pConsole("----------------------Cause------------------------");
+					e.printStackTrace();
+					ret++;
+				}
 			}
 		}
-		CondensedOres.logger.log("All config entries parsed; "+skip+" skipped.");
+		CondensedOres.logger.log("All config entries parsed; "+skip.size()+" skipped: "+skip);
 		return ret;
 	}
 
@@ -370,6 +379,21 @@ public class CondensedOreConfig {
 			requiredElements.add("biomeID");
 			requiredElements.add("biomeName");
 			requiredElements.add("dimensionID");
+		}
+
+		@Override
+		protected boolean canInherit(String key) {
+			return super.canInherit(key) && !key.equals("isInheritOnly");
+		}
+
+		@Override
+		protected String getFallbackValue(String key) {
+			return key.equals("isInheritOnly") ? "false" : super.getFallbackValue(key);
+		}
+
+		@Override
+		protected void onFinish() {
+			super.onFinish();
 		}
 
 	}
