@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.common.base.Charsets;
+
 import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
@@ -124,7 +126,7 @@ public class CondensedOreConfig {
 			out.delete();
 		out.createNewFile();
 		ArrayList<String> li = data.getBlock("base").writeToStrings();
-		ReikaFileReader.writeLinesToFile(out, li, true);
+		ReikaFileReader.writeLinesToFile(out, li, true, Charsets.UTF_8);
 	}
 
 	private void reset() {
