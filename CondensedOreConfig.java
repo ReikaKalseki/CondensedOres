@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 import com.google.common.base.Charsets;
 
@@ -24,6 +25,7 @@ import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 
+import Reika.CondensedOres.CondensedOreVein.VeinShape;
 import Reika.CondensedOres.API.CondensedOreAPI;
 import Reika.CondensedOres.Control.BiomeRule;
 import Reika.CondensedOres.Control.BiomeRule.BiomeDictionaryExclusion;
@@ -65,6 +67,7 @@ public class CondensedOreConfig {
 		base.putData("type", "base");
 		base.putData("isInheritOnly", "true");
 		base.putData("sprinkleMix", "false");
+		base.putData("shape", VeinShape.VANILLA.name().toLowerCase(Locale.ENGLISH));
 		base.putData("retrogen", "false");
 		base.putData("sortOrder", "0");
 		base.putData("veinSize", "10");
@@ -186,9 +189,25 @@ public class CondensedOreConfig {
 
 	private OreEntry parseEntry(String type, LuaBlock b) throws NumberFormatException, IllegalArgumentException, IllegalStateException {
 		String name = b.getString("name");
-		int size = b.getInt("veinSize");
+		int size0 = 0;
+		int size1 = 0;
+		if (b.containsKey("veinSizeMin")) {
+			size0 = b.getInt("veinSizeMin");
+			size1 = b.getInt("veinSizeMax");
+		}
+		else {
+			size0 = b.getInt("veinSize");
+			size1 = size0;
+		}
+		if (size1 < size0)
+			throw new IllegalStateException("Max size is less than min size!");
+		if (size1 <= 0 || size0 <= 0)
+			throw new IllegalStateException("Size includes less than zero!");
 		boolean spr = b.getBoolean("sprinkleMix");
 		boolean retro = b.getBoolean("retrogen");
+		VeinShape shape = VeinShape.VANILLA;
+		if (b.containsKey("shape"))
+			shape = VeinShape.valueOf(b.getString("shape").toUpperCase(Locale.ENGLISH));
 		int order = b.getInt("sortOrder");
 
 		LuaBlock height = b.getChild("heightRule");
@@ -228,7 +247,7 @@ public class CondensedOreConfig {
 			}
 		}
 
-		OreEntry ore = new OreEntry(type, name, size, order, spr, retro, h, f, dim, br, p);
+		OreEntry ore = new OreEntry(type, name, size0, size1, order, spr, shape, retro, h, f, dim, br, p);
 
 		LuaBlock set = b.getChild("blockSet");
 		if (set != null) {

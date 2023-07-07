@@ -21,6 +21,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import Reika.CondensedOres.CondensedOreOptions;
 import Reika.CondensedOres.CondensedOreVein;
+import Reika.CondensedOres.CondensedOreVein.VeinShape;
 import Reika.CondensedOres.API.OreEntryBase;
 import Reika.CondensedOres.API.VeinGenerationEvent;
 import Reika.CondensedOres.Control.BiomeRule.BiomeRuleset;
@@ -51,23 +52,27 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	public final FrequencyRule frequency;
 	public final HeightRule height;
 
-	public final int veinSize;
+	public final int veinSizeMin;
+	public final int veinSizeMax;
 
 	private CondensedOreVein vein;
 
 	public final boolean sprinkleOre;
+	public final VeinShape shape;
 	public final boolean doRetrogen;
 	public final int sortOrder;
 
-	public OreEntry(String id, String n, int size, int order, boolean spr, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
+	public OreEntry(String id, String n, int size0, int size1, int order, boolean spr, VeinShape sh, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
 		super(id, n);
-		veinSize = (int)(size*CondensedOreOptions.SIZE.getFloat());
+		veinSizeMin = (int)(size0*CondensedOreOptions.SIZE.getFloat());
+		veinSizeMax = (int)(size1*CondensedOreOptions.SIZE.getFloat());
 		frequency = f;
 		height = h;
 		dimensionRules = dim;
 		biomeRules = b;
 		neighbors = p;
 		sprinkleOre = spr;
+		shape = sh;
 		doRetrogen = retro;
 		sortOrder = order;
 		if (doRetrogen)
@@ -103,7 +108,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	}
 
 	public OreEntry build() {
-		vein = new CondensedOreVein(this, oreBlocks, veinSize);
+		vein = new CondensedOreVein(this, oreBlocks, veinSizeMin, veinSizeMax);
 		WorldgenProfiler.registerGeneratorAsSubGenerator(this, vein);
 		return this;
 	}
@@ -117,7 +122,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 		StringBuilder sb = new StringBuilder();
 		sb.append("Name: "+displayName+"\n");
 		sb.append("Mix: "+(sprinkleOre ? "Sprinkle" : "One Per Vein")+"\n");
-		sb.append("Vein Size: "+veinSize+"\n");
+		sb.append("Vein Size: "+veinSizeMin+"-"+veinSizeMax+"\n");
 		sb.append("Blocks: "+oreBlocks.size()+" -> "+ReikaJavaLibrary.makeSortedListFromCollection(oreBlocks.getValues(), BlockKey.class)+"\n");
 		sb.append("Height: "+height+"\n");
 		sb.append("Frequency: "+frequency+"\n");
