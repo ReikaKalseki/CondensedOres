@@ -17,12 +17,26 @@ import Reika.CondensedOres.CondensedOres;
 
 public class FrequencyRule {
 
-	private final String oreName;
 	public final double chunkGenChance;
 	public final double veinsPerChunk;
 
+	public static final FrequencyRule ONE_PER_CHUNK = new FrequencyRule() {
+		@Override
+		public boolean generate(int chunkX, int chunkZ, Random rand) {
+			return true;
+		}
+		@Override
+		public int getVeinCount(int chunkX, int chunkZ, Random rand) {
+			return 1;
+		}
+	};
+
+	private FrequencyRule() {
+		chunkGenChance = 1;
+		veinsPerChunk = 1;
+	}
+
 	public FrequencyRule(String n, double v, double c) {
-		oreName = n;
 		if (v < 1)
 			throw new IllegalArgumentException("Invalid vein frequency setting for '"+n+"': # of Veins per generated chunk must be at least one!");
 		if (c <= 0)

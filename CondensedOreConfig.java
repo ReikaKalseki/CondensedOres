@@ -25,7 +25,6 @@ import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 
-import Reika.CondensedOres.CondensedOreVein.VeinShape;
 import Reika.CondensedOres.API.CondensedOreAPI;
 import Reika.CondensedOres.Control.BiomeRule;
 import Reika.CondensedOres.Control.BiomeRule.BiomeDictionaryExclusion;
@@ -41,6 +40,8 @@ import Reika.CondensedOres.Control.FrequencyRule;
 import Reika.CondensedOres.Control.HeightRule;
 import Reika.CondensedOres.Control.OreEntry;
 import Reika.CondensedOres.Control.ProximityRule;
+import Reika.CondensedOres.Control.ShapeRule;
+import Reika.CondensedOres.Control.ShapeRule.VeinShape;
 import Reika.DragonAPI.IO.ReikaFileReader;
 import Reika.DragonAPI.Instantiable.Data.WeightedRandom;
 import Reika.DragonAPI.Instantiable.Data.Immutable.BlockKey;
@@ -67,7 +68,6 @@ public class CondensedOreConfig {
 		base.putData("type", "base");
 		base.putData("isInheritOnly", "true");
 		base.putData("sprinkleMix", "false");
-		base.putData("shape", VeinShape.VANILLA.name().toLowerCase(Locale.ENGLISH));
 		base.putData("retrogen", "false");
 		base.putData("sortOrder", "0");
 		base.putData("veinSize", "10");
@@ -79,6 +79,8 @@ public class CondensedOreConfig {
 		OreLuaBlock freq = new OreLuaBlock("veinFrequency", base, data);
 		freq.putData("veinsPerChunk", "8");
 		freq.putData("chunkGenChance", "1");
+		OreLuaBlock shp = new OreLuaBlock("veinShape", base, data);
+		shp.putData("shape", VeinShape.VANILLA.name().toLowerCase(Locale.ENGLISH));
 		OreLuaBlock spawn = new OreLuaBlock("spawnBlock", base, data);
 		OreLuaBlock sub = new OreLuaBlock("-", spawn, data);
 		sub.putData("block", "minecraft:stone");
@@ -187,7 +189,7 @@ public class CondensedOreConfig {
 		return ret;
 	}
 
-	private OreEntry parseEntry(String type, LuaBlock b) throws NumberFormatException, IllegalArgumentException, IllegalStateException {
+	private OreEntry parseEntry(String type, LuaBlock b) throws Exception {
 		String name = b.getString("name");
 		int size0 = 0;
 		int size1 = 0;
@@ -205,9 +207,6 @@ public class CondensedOreConfig {
 			throw new IllegalStateException("Size includes less than zero!");
 		boolean spr = b.getBoolean("sprinkleMix");
 		boolean retro = b.getBoolean("retrogen");
-		VeinShape shape = VeinShape.VANILLA;
-		if (b.containsKey("shape"))
-			shape = VeinShape.valueOf(b.getString("shape").toUpperCase(Locale.ENGLISH));
 		int order = b.getInt("sortOrder");
 
 		LuaBlock height = b.getChild("heightRule");
@@ -215,10 +214,22 @@ public class CondensedOreConfig {
 			throw new IllegalStateException("Entry is missing height rule!");
 		HeightRule h = new HeightRule(height.getInt("minHeight"), height.getInt("maxHeight"), height.getString("variation"));
 
-		LuaBlock freq = b.getChild("veinFrequency");
-		if (freq == null)
-			throw new IllegalStateException("Entry is missing frequency!");
-		FrequencyRule f = new FrequencyRule(name, freq.getDouble("veinsPerChunk"), freq.getDouble("chunkGenChance"));
+		LuaBlock shape = b.getChild("veinShape");
+		if (shape == null)
+			throw new IllegalStateException("Entry is missing vein shape definition!");
+		ShapeRule sr = new ShapeRule(shape);
+
+		FrequencyRule f;
+		if (sr.shape == VeinShape.NOISE) {
+			f = FrequencyRule.ONE_PER_CHUNK;
+			CondensedOres.logger.log("Due to noise-based generation, frequency rules are being ignored.");
+		}
+		else {
+			LuaBlock freq = b.getChild("veinFrequency");
+			if (freq == null)
+				throw new IllegalStateException("Entry is missing frequency!");
+			f = new FrequencyRule(name, freq.getDouble("veinsPerChunk"), freq.getDouble("chunkGenChance"));
+		}
 
 		LuaBlock biome = b.getChild("biomeRules");
 		if (biome == null)
@@ -247,7 +258,7 @@ public class CondensedOreConfig {
 			}
 		}
 
-		OreEntry ore = new OreEntry(type, name, size0, size1, order, spr, shape, retro, h, f, dim, br, p);
+		OreEntry ore = new OreEntry(type, name, size0, size1, order, spr, sr, retro, h, f, dim, br, p);
 
 		LuaBlock set = b.getChild("blockSet");
 		if (set != null) {

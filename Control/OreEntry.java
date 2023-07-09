@@ -21,11 +21,11 @@ import net.minecraftforge.common.MinecraftForge;
 
 import Reika.CondensedOres.CondensedOreOptions;
 import Reika.CondensedOres.CondensedOreVein;
-import Reika.CondensedOres.CondensedOreVein.VeinShape;
 import Reika.CondensedOres.API.OreEntryBase;
 import Reika.CondensedOres.API.VeinGenerationEvent;
 import Reika.CondensedOres.Control.BiomeRule.BiomeRuleset;
 import Reika.CondensedOres.Control.DimensionRule.DimensionRuleset;
+import Reika.CondensedOres.Control.ShapeRule.VeinShape;
 import Reika.DragonAPI.Auxiliary.Trackers.RetroGenController;
 import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler;
 import Reika.DragonAPI.Auxiliary.Trackers.WorldgenProfiler.WorldProfilerParent;
@@ -51,6 +51,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 
 	public final FrequencyRule frequency;
 	public final HeightRule height;
+	public final ShapeRule shape;
 
 	public final int veinSizeMin;
 	public final int veinSizeMax;
@@ -58,11 +59,10 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	private CondensedOreVein vein;
 
 	public final boolean sprinkleOre;
-	public final VeinShape shape;
 	public final boolean doRetrogen;
 	public final int sortOrder;
 
-	public OreEntry(String id, String n, int size0, int size1, int order, boolean spr, VeinShape sh, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
+	public OreEntry(String id, String n, int size0, int size1, int order, boolean spr, ShapeRule sh, boolean retro, HeightRule h, FrequencyRule f, DimensionRuleset dim, BiomeRuleset b, ProximityRule p) {
 		super(id, n);
 		veinSizeMin = (int)(size0*CondensedOreOptions.SIZE.getFloat());
 		veinSizeMax = (int)(size1*CondensedOreOptions.SIZE.getFloat());
@@ -126,6 +126,7 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 		sb.append("Blocks: "+oreBlocks.size()+" -> "+ReikaJavaLibrary.makeSortedListFromCollection(oreBlocks.getValues(), BlockKey.class)+"\n");
 		sb.append("Height: "+height+"\n");
 		sb.append("Frequency: "+frequency+"\n");
+		sb.append("Shape: "+shape+"\n");
 		sb.append("Biomes: "+biomeRules+"\n");
 		sb.append("Dimensions: "+dimensionRules+"\n");
 		sb.append("Spawn Blocks: "+String.valueOf(blockRules).replace(":-1", "")+"\n");
@@ -147,20 +148,18 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 				if (this.isValidBiome(world, chunkX, chunkZ)) {
 					int n = frequency.getVeinCount(chunkX, chunkZ, random);
 					for (int i = 0; i < n; i++) {
-						int x = chunkX + random.nextInt(16);
-						int z = chunkZ + random.nextInt(16);
+						int x = chunkX;
+						int z = chunkZ;
+						if (shape.shape.allowRandomOffset()) {
+							x += random.nextInt(16);
+							z += random.nextInt(16);
+						}
 						int y = height.getRandomizedY(random);
 						flag = this.placeVein(world, x, y, z, random);
 					}
 				}
 			}
 		}
-		//else {
-		//
-		//}
-		//if (flag) {
-		//	CondensedOres.logger.debug("Generated "+this+" @ "+chunkX+","+chunkZ);
-		//}
 	}
 
 	@Override
@@ -176,8 +175,8 @@ public final class OreEntry extends OreEntryBase implements RetroactiveGenerator
 	private boolean placeVein(World world, int x, int y, int z, Random random) {
 		this.startProfiling(world, x, z);
 		BlockKey at = BlockKey.getAt(world, x, y, z);
-		if (blockRules.contains(at)) {
-			if (neighbors.isLocationValid(world, x, y, z)) {
+		if (shape.shape == VeinShape.NOISE || blockRules.contains(at)) {
+			if (shape.shape == VeinShape.NOISE || neighbors.isLocationValid(world, x, y, z)) {
 				vein.target = at.blockID;
 				vein.proximity = neighbors;
 				if (vein.generate(world, random, x, y, z)) {
