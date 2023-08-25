@@ -215,8 +215,8 @@ public class CondensedOreConfig {
 		HeightRule h = new HeightRule(height.getInt("minHeight"), height.getInt("maxHeight"), height.getString("variation"));
 
 		LuaBlock shape = b.getChild("veinShape");
-		if (shape == null)
-			throw new IllegalStateException("Entry is missing vein shape definition!");
+		//if (shape == null)
+		//	throw new IllegalStateException("Entry is missing vein shape definition!");
 		ShapeRule sr = new ShapeRule(shape);
 
 		FrequencyRule f;
